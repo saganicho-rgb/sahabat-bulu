@@ -29,6 +29,19 @@ const baseRender = render;
 render = () => { baseRender(); const n = $("#nav"); if (n) n.insertAdjacentHTML("beforeend", `<button class="rf" data-act="refresh"><span>🔄</span>Refresh</button>`); };
 root.addEventListener("click", async e => { const t = e.target.closest('[data-act="refresh"]'); if (!t || busy) return; t.classList.add("spin"); try { if (!IS_PREVIEW) await load(); render(); toast("Data diperbarui"); } catch (er) { t.classList.remove("spin"); toast("Gagal memuat: " + er.message); } });
 const stR = document.createElement("style"); stR.textContent = "#kc #nav .rf{margin-top:auto} #kc #nav .rf.spin span{display:inline-block;animation:kcspin .8s linear infinite} @keyframes kcspin{to{transform:rotate(360deg)}} @media(max-width:760px){#kc #nav .rf{margin-top:0}} @media(prefers-reduced-motion:reduce){#kc #nav .rf.spin span{animation:none}}"; document.head.appendChild(stR);
+function lbDraw() { const el = $("#lb"); if (!el) return; const g = el._imgs, i = +el.dataset.i; el.innerHTML = `<button class="lbx" data-lb="x" aria-label="Tutup">✕</button>${g.length > 1 ? `<button class="lbn l" data-lb="-1" aria-label="Sebelumnya">‹</button><button class="lbn r" data-lb="1" aria-label="Berikutnya">›</button><div class="lbc">${i + 1} / ${g.length}</div>` : ""}<img src="${esc(g[i])}" alt="">`; }
+function lbOpen(g, i) { let el = $("#lb"); if (!el) { el = document.createElement("div"); el.id = "lb"; root.appendChild(el); } el._imgs = g; el.dataset.i = i; lbDraw(); }
+function lbMove(d) { const el = $("#lb"); if (!el) return; const n = el._imgs.length; el.dataset.i = (+el.dataset.i + d + n) % n; lbDraw(); }
+root.addEventListener("click", e => {
+  const im = e.target.closest("#ov .box > .sl .st > img");
+  if (im) { const k = [...im.parentNode.children]; lbOpen(k.map(x => x.src), k.indexOf(im)); return; }
+  const l = $("#lb"); if (!l) return; const b = e.target.closest("[data-lb]");
+  if (b && b.dataset.lb !== "x") lbMove(+b.dataset.lb); else if (b || e.target === l) l.remove();
+});
+document.addEventListener("keydown", e => { const l = $("#lb"); if (!l) return; if (e.key === "Escape") { l.remove(); e.stopImmediatePropagation(); } else if (e.key === "ArrowLeft") lbMove(-1); else if (e.key === "ArrowRight") lbMove(1); }, true);
+let lx = 0; root.addEventListener("touchstart", e => { if (e.target.closest("#lb")) lx = e.touches[0].clientX; }, { passive: true });
+root.addEventListener("touchend", e => { if (!e.target.closest("#lb")) return; const dx = e.changedTouches[0].clientX - lx; if (Math.abs(dx) > 50) lbMove(dx < 0 ? 1 : -1); }, { passive: true });
+const stL = document.createElement("style"); stL.textContent = "#kc .st>img{object-position:center 22%} #kc .box>.sl .st>*{aspect-ratio:auto;height:min(56vh,440px);object-fit:contain;background:#fff0ec;cursor:zoom-in;object-position:center} #kc #lb{position:absolute;inset:0;z-index:30;background:rgba(25,12,15,.95);display:flex;align-items:center;justify-content:center} #kc #lb img{max-width:100%;max-height:100%;object-fit:contain;touch-action:pinch-zoom} #kc #lb button{all:unset;cursor:pointer;position:absolute;color:#fff;background:rgba(255,255,255,.2);width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:22px;z-index:2} #kc #lb .lbx{top:14px;right:14px} #kc #lb .lbn{top:50%;transform:translateY(-50%)} #kc #lb .lbn.l{left:12px} #kc #lb .lbn.r{right:12px} #kc #lb .lbc{position:absolute;bottom:18px;left:0;right:0;text-align:center;color:#fff;font-size:13px} #kc #lb button:focus-visible{outline:3px solid #f4a6b7}"; document.head.appendChild(stL);
 const BUCKET = "foto-kucing";
 let sb = null, cats = [], admin = false, view = "list", selId = null, q = "", fg = "", fs = "", busy = false, prs = [];
 const $ = s => root.querySelector(s);
