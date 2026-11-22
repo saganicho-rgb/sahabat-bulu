@@ -96,10 +96,9 @@ async function boot() {
 }
 
 function render() {
-  if (!admin && view === "tree") view = "list"; if (!admin && view === "admin" && location.hash !== "#admin") view = "list";
+  if (!admin && view === "admin" && location.hash !== "#admin") view = "list";
   const items = [["list", "🐾", "Kucing"], ["home", "💞", "Pasangan"], ["tree", "🌳", "Silsilah"], ["admin", "🔐", "Admin"]];
-  $("#nav").innerHTML = `<h1>🐱 Sahabat Bulu</h1>` + items.filter(i => admin || i[0] === "home" || i[0] === "list" || (i[0] === "admin" && location.hash === "#admin")).map(i => `<button class="${view === i[0] ? "on" : ""}" data-act="nav" data-id="${i[0]}"><span>${i[1]}</span>${i[2]}</button>`).join("");
-  const m = $("#main");
+  $("#nav").innerHTML = `<h1>🐱 Sahabat Bulu</h1>` + items.filter(i => admin || i[0] === "home" || i[0] === "list" || i[0] === "tree" || (i[0] === "admin" && location.hash === "#admin")
   m.innerHTML = { home: vHome, list: vList, tree: vTree, admin: vAdmin }[view]();
   if (view === "list") { const i = $("#q"); i.addEventListener("input", () => { q = i.value; $("#lg").innerHTML = gridHtml(); }); $("#fg").addEventListener("change", e => { fg = e.target.value; $("#lg").innerHTML = gridHtml(); }); $("#fs").addEventListener("change", e => { fs = e.target.value; $("#lg").innerHTML = gridHtml(); }); }
   if (view === "tree") $("#sel").addEventListener("change", e => { selId = e.target.value; render(); });
@@ -186,7 +185,7 @@ function modal(h, w = "") { $("#ov").innerHTML = `<div class="modal" data-act="c
 function detail(id) {
   const c = byId(id), a = byId(c.ayah_id), i = byId(c.ibu_id);
   const sib = cats.filter(k => k.id !== c.id && ((c.ayah_id && k.ayah_id === c.ayah_id) || (c.ibu_id && k.ibu_id === c.ibu_id)));
-  modal(`${slider(c)}<h2 style="margin-bottom:0">${esc(c.nama)}</h2><dl>${isKid(c) ? `<dt>Status adopsi</dt><dd><b>${esc(stOf(c))}</b></dd>` : ""}<dt>Jenis kelamin</dt><dd>${esc(c.jenis_kelamin)}</dd><dt>Umur</dt><dd>${esc(umur(c.tanggal_lahir, c.tanggal_wafat))}${c.tanggal_wafat ? " (alm.)" : ""}</dd><dt>Lahir</dt><dd>${esc(c.tanggal_lahir || "-")}</dd><dt>Ras</dt><dd>${esc(c.ras || "-")}</dd><dt>Warna bulu</dt><dd>${esc(c.warna_bulu || "-")}</dd><dt>Ayah</dt><dd>${a ? esc(a.nama) : "-"}</dd><dt>Ibu</dt><dd>${i ? esc(i.nama) : "-"}</dd><dt>Saudara</dt><dd>${sib.length ? sib.map(s => esc(s.nama)).join(", ") : "-"}</dd><dt>Anak</dt><dd>${kids(c).map(s => esc(s.nama)).join(", ") || "-"}</dd><dt>Catatan</dt><dd>${esc(c.catatan || "-")}</dd></dl><div class="bar">${admin ? `<button class="btn" data-act="tree" data-id="${c.id}">Lihat silsilah</button>` : ""}<button class="btn alt" data-act="close2">Tutup</button></div>`);
+  modal(`${slider(c)}<h2 style="margin-bottom:0">${esc(c.nama)}</h2><dl>${isKid(c) ? `<dt>Status adopsi</dt><dd><b>${esc(stOf(c))}</b></dd>` : ""}<dt>Jenis kelamin</dt><dd>${esc(c.jenis_kelamin)}</dd><dt>Umur</dt><dd>${esc(umur(c.tanggal_lahir, c.tanggal_wafat))}${c.tanggal_wafat ? " (alm.)" : ""}</dd><dt>Lahir</dt><dd>${esc(c.tanggal_lahir || "-")}</dd><dt>Ras</dt><dd>${esc(c.ras || "-")}</dd><dt>Warna bulu</dt><dd>${esc(c.warna_bulu || "-")}</dd><dt>Ayah</dt><dd>${a ? esc(a.nama) : "-"}</dd><dt>Ibu</dt><dd>${i ? esc(i.nama) : "-"}</dd><dt>Saudara</dt><dd>${sib.length ? sib.map(s => esc(s.nama)).join(", ") : "-"}</dd><dt>Anak</dt><dd>${kids(c).map(s => esc(s.nama)).join(", ") || "-"}</dd><dt>Catatan</dt><dd>${esc(c.catatan || "-")}</dd></dl><div class="bar"><button class="btn" data-act="tree" data-id="${c.id}">Lihat silsilah</button>}<button class="btn alt" data-act="close2">Tutup</button></div>`);
 }
 function form(id) {
   const c = id ? byId(id) : {}, o = (g, v) => `<option value="">- tidak diketahui -</option>` + cats.filter(k => k.jenis_kelamin === g && k.id !== id).map(k => `<option value="${k.id}" ${k.id === v ? "selected" : ""}>${esc(k.nama)}</option>`).join("");
